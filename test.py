@@ -19,11 +19,13 @@ class MyUI(wx.Frame):
     ROLE = {"left": "defend", "right": "terror"}
 
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, title="Test", pos=(-1, -1), size=(500, 500))
+        wx.Frame.__init__(self, parent, title="Test", pos=(-1, -1), size=(1000, 800))
 
         self.full = False
         self.right_score = 0
         self.left_score = 0
+
+        self.fade_effect = wx.SHOW_EFFECT_BLEND
 
         # self.mp = wx.media.MediaCtrl(self, size=wx.Size(512,384), szBackend=wx.media.MEDIABACKEND_DIRECTSHOW)
         # self.mp.Load("./defend1.mp4")
@@ -31,10 +33,9 @@ class MyUI(wx.Frame):
         self.main_screen_panel = wx.Panel(self, -1)
 
         score_font = wx.Font(120, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_BOLD)
-        button_font = wx.Font(40, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_BOLD)
+        button_font = wx.Font(15, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_MEDIUM)
 
         self.media_control = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
-        
         self.leftStartMedia = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
         self.rightStartMedia = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
 
@@ -47,14 +48,15 @@ class MyUI(wx.Frame):
         self.left_score_text.SetForegroundColour(white)
         self.right_score_text.SetForegroundColour(white)
 
-        self._do_layout()
+        self.start_button = wx.Button(self.main_screen_panel, label="START")
+        self.start_button.SetFont(button_font)
+        self.start_button.SetForegroundColour(white)
 
-        # self.button = wx.Button(self, label="START")
-        # self.button.SetFont(button_font)
+        self.start_button.Bind(wx.EVT_BUTTON, self.OnButtonClicked)
+        # self.start_button.SetSize(self.start_button.GetBestSize())
 
-        # self.Bind(wx.EVT_BUTTON, self.OnClick, self.button)
         # self.media_control.Bind(wx.media.EVT_MEDIA_LOADED, self.afterLoad)
-        self.media_control.Bind(wx.media.EVT_MEDIA_FINISHED, self.init_game)
+        self.media_control.Bind(wx.media.EVT_MEDIA_FINISHED, self.ending_video_done)
 
         self.leftStartMedia.Bind(wx.media.EVT_MEDIA_FINISHED, self.start_real_game)
         self.rightStartMedia.Bind(wx.media.EVT_MEDIA_FINISHED, self.start_left_video)
@@ -66,6 +68,7 @@ class MyUI(wx.Frame):
         left_video_path = f"./video/{MyUI.ROLE["left"]}{MyUI.STATUS["start"]+1}.mp4"
         right_video_path = f"./video/{MyUI.ROLE["left"]}{MyUI.STATUS["start"]+1}.mp4"
 
+        self._do_layout()
         
         if not self.leftStartMedia.Load(left_video_path):
             print("Media Load Failed")
@@ -73,8 +76,7 @@ class MyUI(wx.Frame):
         if not self.rightStartMedia.Load(right_video_path):
             print("Media Load Failed")
             return self.quit(None)
-        
-        self.init_game()
+    
     
     def _do_layout(self):
         # self.toggleFullScreen()
@@ -83,20 +85,23 @@ class MyUI(wx.Frame):
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        # middle_sizer = wx.StaticBoxSizer( wx.StaticBox( self.main_screen_panel, 100+self.number_of_added_mas, wx.EmptyString ),wx.VERTICAL )
+        # middel_sizer =
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         main_sizer.AddSpacer(80)
-        main_sizer.Add(top_sizer, 0, wx.EXPAND , border=10)
-        main_sizer.Add(bottom_sizer, 0, wx.EXPAND, border=10)
+        main_sizer.Add(top_sizer, 0, wx.EXPAND)
+        main_sizer.Add(self.start_button, 0, wx.CENTER)
+        main_sizer.Add(bottom_sizer, 0, wx.EXPAND)
 
-        # sizer_2.Add(self.left_score_text, 0, flag=wx.ALIGN_TOP, border=2)
-        # sizer_2.Add(self.right_score_text, 0, flag=wx.ALIGN_BOTTOM, border=2)
         top_sizer.AddStretchSpacer(1)
         top_sizer.Add(self.left_score_text, 0, wx.Center | wx.ALL, 10)
         top_sizer.AddStretchSpacer(2)
         top_sizer.Add(self.right_score_text, 0, wx.Center | wx.ALL, 10)
         top_sizer.AddStretchSpacer(1)
 
+        # middle_sizer.Add(self.start_button, 1, wx.EXPAND)
+        # bottom_sizer.Add(self.start_button, 1, wx.EXPAND )
         bottom_sizer.Add(self.rightStartMedia, 1, wx.EXPAND, 0)
         bottom_sizer.Add(self.leftStartMedia, 1, wx.EXPAND, 0)
         bottom_sizer.Add(self.media_control, 1, wx.EXPAND, 0)
@@ -105,12 +110,16 @@ class MyUI(wx.Frame):
         self.Centre()
         self.Layout()
 
+    def OnButtonClicked(self, e):
+        self.init_game()
+        self.start_button.HideWithEffect(self.fade_effect)
+
     def start_real_game(self, e):
-        self.leftStartMedia.HideWithEffect()
+        self.leftStartMedia.HideWithEffect(self.fade_effect)
 
     def start_left_video(self, e):
-        self.rightStartMedia.HideWithEffect()
-        self.leftStartMedia.ShowWithEffect()
+        self.rightStartMedia.HideWithEffect(self.fade_effect)
+        self.leftStartMedia.ShowWithEffect(self.fade_effect)
         self.leftStartMedia.Play()
 
     def updateUI(self):
@@ -118,13 +127,16 @@ class MyUI(wx.Frame):
         self.left_score_text.SetLabel(str(self.left_score))
     
     def init_game(self, e=None):
-        self.media_control.HideWithEffect()
+        self.media_control.HideWithEffect(self.fade_effect)
         self.right_score = 0
         self.left_score = 0
         self.updateUI()
 
-        self.rightStartMedia.ShowWithEffect()
+        self.rightStartMedia.ShowWithEffect(self.fade_effect)
         self.rightStartMedia.Play()
+
+    def ending_video_done(self, e):
+        self.start_button.ShowWithEffect(self.fade_effect)
     
     # winner is defend or terror
     # if game is over => True
@@ -157,7 +169,7 @@ class MyUI(wx.Frame):
             print("Media Load Failed")
             return self.quit(None)
         
-        self.ShowWithEffect()
+        self.media_contorl.ShowWithEffect()
         self.media_control.Play()
     
     def toggleFullScreen(self):

@@ -28,8 +28,8 @@ class User():
     def initiate(self):
         self.score = 0
 
-defend_user_env = os.getenv("DEFEND").split(":")
-attack_user_env = os.getenv("ATTACK").split(":")
+defend_user_env = os.getenv("DEFEND", "hi:!234").split(":")
+attack_user_env = os.getenv("ATTACK", "hi:1234").split(":")
 
 ### TODO: url
 defend_user = User(role=DEFEND, url=defend_user_env[0], port=defend_user_env[1])

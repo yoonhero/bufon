@@ -1,0 +1,2 @@
+paho-mqtt
+wxPython==4.2.1

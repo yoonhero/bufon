@@ -30,7 +30,7 @@ class MyUI(wx.Frame):
         # self.mp.Bind(wx.media.EVT_MEDIA_LOADED,self.OnPlay)   
         self.main_screen_panel = wx.Panel(self, -1)
 
-        score_font = wx.Font(50, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_BOLD)
+        score_font = wx.Font(120, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_BOLD)
         button_font = wx.Font(40, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_BOLD)
 
         self.media_control = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
@@ -38,14 +38,14 @@ class MyUI(wx.Frame):
         self.leftStartMedia = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
         self.rightStartMedia = wx.media.MediaCtrl(self.main_screen_panel, style=wx.SIMPLE_BORDER)
 
-        self.left_score_text = wx.StaticText(self.main_screen_panel, label="0")
-        self.right_score_text = wx.StaticText(self.main_screen_panel, label="0")
+        self.left_score_text = wx.StaticText(self.main_screen_panel, label="0", size=(-1, -1))
+        self.right_score_text = wx.StaticText(self.main_screen_panel, label="0", size=(-1, -1))
         self.left_score_text.SetFont(score_font)
         self.right_score_text.SetFont(score_font)
         white = (255, 255, 255)
         black = (0, 0, 0)
-        self.left_score_text.SetForegroundColour(black)
-        self.right_score_text.SetForegroundColour(black)
+        self.left_score_text.SetForegroundColour(white)
+        self.right_score_text.SetForegroundColour(white)
 
         self._do_layout()
 
@@ -78,24 +78,31 @@ class MyUI(wx.Frame):
     
     def _do_layout(self):
         # self.toggleFullScreen()
-        # self.SetBackgroundColour('black')
+        self.SetBackgroundColour('black')
         # self.p = wx.Panel(self, -1)
 
-        sizer_1 = wx.BoxSizer(wx.VERTICAL)
-        sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_3 = wx.BoxSizer(wx.VERTICAL)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        sizer_1.Add(sizer_2, 1, wx.CENTER, border=20)
-        sizer_1.Add(sizer_3, 5, wx.CENTER, border=20)
+        main_sizer.AddSpacer(80)
+        main_sizer.Add(top_sizer, 0, wx.EXPAND , border=10)
+        main_sizer.Add(bottom_sizer, 0, wx.EXPAND, border=10)
 
-        sizer_2.Add(self.left_score_text, 0, flag=wx.ALIGN_TOP, border=2)
-        sizer_2.Add(self.right_score_text, 0, flag=wx.ALIGN_BOTTOM, border=2)
+        # sizer_2.Add(self.left_score_text, 0, flag=wx.ALIGN_TOP, border=2)
+        # sizer_2.Add(self.right_score_text, 0, flag=wx.ALIGN_BOTTOM, border=2)
+        top_sizer.AddStretchSpacer(1)
+        top_sizer.Add(self.left_score_text, 0, wx.Center | wx.ALL, 10)
+        top_sizer.AddStretchSpacer(2)
+        top_sizer.Add(self.right_score_text, 0, wx.Center | wx.ALL, 10)
+        top_sizer.AddStretchSpacer(1)
 
-        sizer_3.Add(self.rightStartMedia, 1, wx.EXPAND, 0)
-        sizer_3.Add(self.leftStartMedia, 1, wx.EXPAND, 0)
-        sizer_3.Add(self.media_control, 1, wx.EXPAND, 0)
+        bottom_sizer.Add(self.rightStartMedia, 1, wx.EXPAND, 0)
+        bottom_sizer.Add(self.leftStartMedia, 1, wx.EXPAND, 0)
+        bottom_sizer.Add(self.media_control, 1, wx.EXPAND, 0)
 
-        self.main_screen_panel.SetSizer(sizer_1)
+        self.main_screen_panel.SetSizer(main_sizer)
+        self.Centre()
         self.Layout()
 
     def start_real_game(self, e):

@@ -28,9 +28,12 @@ class User():
     def initiate(self):
         self.score = 0
 
+defend_user_env = os.getenv("DEFEND").split(":")
+attack_user_env = os.getenv("ATTACK").split(":")
+
 ### TODO: url
-defend_user = User(role=DEFEND, url="", port="")
-attack_user = User(role=TERROR, url="", port="")
+defend_user = User(role=DEFEND, url=defend_user_env[0], port=defend_user_env[1])
+attack_user = User(role=TERROR, url=attack_user_env[0], port=attack_user_env[1])
 
 USER_DATA = {}
 USER_DATA[defend_user.uid] = defend_user
@@ -57,20 +60,20 @@ def on_message(client, userdata, msg):
             attack_user.initiate()
 
 def make_client(client_uid, client_url, port):
-    # client = mqtt.Client(client_id=client_uid)
-    # client.on_connect = on_connect
-    # client.on_message = on_message
+    client = mqtt.Client(client_id=client_uid)
+    client.on_connect = on_connect
+    client.on_message = on_message
 
-    # client.connect(client_url, port, 60)
+    client.connect(client_url, port, 60)
     return client
     # return client
 
 
 app = MyApp(False)
 
-class client():
-    def update():
-        print(app.win(DEFEND))
+# class client():
+#     def update():
+#         print(app.win(DEFEND))
 
 client1 = make_client(defend_user.uid, defend_user.url, defend_user.port)
 client2 = make_client(attack_user.uid, attack_user.url, attack_user.port)
@@ -78,8 +81,8 @@ client2 = make_client(attack_user.uid, attack_user.url, attack_user.port)
 def connect(client):
     # client1.loop_start()
     # client2.loop_start()
-    # client.loop_forever()
-    client.update()
+    client.loop_forever()
+    # client.update()
 
 client_thread1 = Thread(target=connect, kwargs={"client": client1})
 client_thread2 = Thread(target=connect, kwargs={"client": client2})

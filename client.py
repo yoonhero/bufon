@@ -10,22 +10,40 @@ qos = 0
 topic = "game"
 add_score_msg = "score"
 
+game_ending_topic = "end"
+game_ending_msg = "end"
+
 # ROLES
 DEFEND = "defend"
 TERROR = "terror"
 
 class User():
     def __init__(self, role, url, port):
-        self.value = uuid.uuid4()
+        self.uid = uuid.uuid4()
         self.role = role
         self.score = 0
         self.url = url
         self.port = port
+        self.client = self.make_client()
 
-    @property
-    def uid(self): return self.value
+    def make_client(self):
+        client = mqtt.Client(client_id=self.uid)
+        client.on_connect = on_connect
+        client.on_message = on_message
+
+        client.connect(self.url, self.port, 60)
+
+        return client
+    
+    def connect(self):
+        self.client.loop_forever()
+
+    def threading(self):
+        self.thread = Thread(target=self.connect)
+        self.thread.start()
 
     def initiate(self):
+        self.client.publish(game_ending_topic, game_ending_msg, qos)
         self.score = 0
 
 defend_user_env = os.getenv("DEFEND", "hi:!234").split(":")
@@ -56,37 +74,23 @@ def on_message(client, userdata, msg):
         user = USER_DATA[client_id]
         user.score += 1
         if app.win(user.role):
+            # When Game is over
             defend_user.initiate()
             attack_user.initiate()
 
-def make_client(client_uid, client_url, port):
-    client = mqtt.Client(client_id=client_uid)
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    client.connect(client_url, port, 60)
-    return client
-    # return client
-
-
 app = MyApp(False)
+
+defend_user.threading()
+attack_user.threading()
 
 # class client():
 #     def update():
 #         print(app.win(DEFEND))
 
-client1 = make_client(defend_user.uid, defend_user.url, defend_user.port)
-client2 = make_client(attack_user.uid, attack_user.url, attack_user.port)
+# client1 = make_client(defend_user.uid, defend_user.url, defend_user.port)
+# client2 = make_client(attack_user.uid, attack_user.url, attack_user.port)
 
-def connect(client):
-    # client1.loop_start()
-    # client2.loop_start()
-    client.loop_forever()
-    # client.update()
-
-client_thread1 = Thread(target=connect, kwargs={"client": client1})
-client_thread2 = Thread(target=connect, kwargs={"client": client2})
-client_thread1.start()
-client_thread2.start()
+# defend_user.client = client1
+# attack_user.client = client2
 
 app.MainLoop()
